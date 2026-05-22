@@ -1,10 +1,10 @@
-import { Controller, Post, Body, Get, Headers, UseGuards, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { SendOtpDto } from './dto/send-otp.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { CompleteRegistrationDto } from './dto/complete-registration.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '@prisma/client';
@@ -12,60 +12,41 @@ import { User } from '@prisma/client';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
-  @Post('send-otp')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Send a 6-digit OTP code to email or phone' })
-  @ApiResponse({ status: 200, description: 'OTP generated and logged to console.' })
-  @ApiResponse({ status: 400, description: 'Invalid input format.' })
-  async sendOtp(@Body() dto: SendOtpDto) {
-    return this.authService.sendOtp(dto);
-  }
-
-  @Post('verify-otp')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify the OTP code (Logs in user if already registered)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Verification status. Returns access token, refresh token, and user if registered, otherwise returns short-lived tempToken.',
-  })
-  @ApiResponse({ status: 401, description: 'Invalid or expired OTP code.' })
-  async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto);
-  }
-
-  @Post('complete-registration')
+  @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Complete user registration using temporary verification session token' })
-  @ApiResponse({ status: 201, description: 'User profile successfully created. Returns login tokens.' })
-  @ApiResponse({ status: 400, description: 'Registration failed (invalid role, user already exists).' })
-  @ApiResponse({ status: 401, description: 'Stale or invalid temp session token.' })
-  @ApiBearerAuth()
-  async completeRegistration(
-    @Body() dto: CompleteRegistrationDto,
-    @Headers('authorization') authHeader?: string,
-  ) {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Authorization header containing Bearer tempToken is required');
-    }
+  @ApiOperation({ summary: 'Register a new user with email, firstName, lastName, phone, and password' })
+  @ApiResponse({ status: 201, description: 'User created. Returns access and refresh tokens.' })
+  @ApiResponse({ status: 400, description: 'Validation error or account already exists.' })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
 
-    const tempToken = authHeader.split(' ')[1];
-    try {
-      // Decode and verify the short-lived session token
-      const payload = this.jwtService.verify(tempToken);
-      
-      if (payload.type !== 'registration_temp') {
-        throw new UnauthorizedException('Invalid token type. Registration session token required.');
-      }
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Log in with email and password' })
+  @ApiResponse({ status: 200, description: 'Returns access and refresh tokens.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-      return this.authService.completeRegistration(dto, { target: payload.target });
-    } catch (error) {
-      throw new UnauthorizedException('Registration session token has expired or is invalid');
-    }
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request a password reset link' })
+  @ApiResponse({ status: 200, description: 'Reset email sent if account exists (check console in dev).' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using the token from the reset email' })
+  @ApiResponse({ status: 200, description: 'Password updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired reset token.' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Get('me')
@@ -74,7 +55,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current logged-in user profile details' })
   @ApiResponse({ status: 200, description: 'Returns authenticated user object with profile details.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  async getMe(@CurrentUser() user: User) {
+  async getMe(@CurrentUser() user: Omit<User, 'passwordHash'>) {
     return user;
   }
 }

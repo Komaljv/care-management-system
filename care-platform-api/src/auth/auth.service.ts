@@ -1,16 +1,29 @@
-import { Injectable, BadRequestException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { SendOtpDto } from './dto/send-otp.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { CompleteRegistrationDto } from './dto/complete-registration.dto';
+import { MailService } from '../mail/mail.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { User, Role, UserStatus } from '@prisma/client';
+
+const BCRYPT_ROUNDS = 12;
+const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   private validateEmail(email: string): string {
@@ -24,165 +37,67 @@ export class AuthService {
 
   private validatePhoneNumber(phone: string): string {
     const trimmed = phone.trim();
-    // Basic phone validation (digits, plus, spaces, dashes, parentheses)
     const phoneRegex = /^\+?[0-9\s\-()]{6,20}$/;
     if (!phoneRegex.test(trimmed)) {
       throw new BadRequestException('Invalid phone number format');
     }
-    // Remove spaces, dashes and parentheses for normalized phone number
     return trimmed.replace(/[\s\-()]/g, '');
   }
 
-  async sendOtp(dto: SendOtpDto) {
-    const target = this.validateEmail(dto.email);
-    
-    // Generate a 6-digit OTP code
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
+  private hashResetToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
 
-    // Save to DB
-    await this.prisma.otpCode.create({
-      data: {
-        target,
-        code: otpCode,
-        expiresAt,
-      },
-    });
-
-    // Development Mode Console Log (frees us from SMTP/Twilio configuration on Day 1)
-    console.log(`\n======================================================`);
-    console.log(`[DEVELOPMENT OTP SERVICE]`);
-    console.log(`Sent OTP to: ${target}`);
-    console.log(`CODE: ${otpCode}`);
-    console.log(`PURPOSE: ${dto.purpose || 'authentication'}`);
-    console.log(`EXPIRES AT: ${expiresAt.toISOString()}`);
-    console.log(`======================================================\n`);
-
+  private formatUserResponse(user: User) {
     return {
-      success: true,
-      message: `OTP sent successfully to ${target} (check console logs in development)`,
+      id: user.id,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      status: user.status,
     };
   }
 
-  async verifyOtp(dto: VerifyOtpDto) {
-    const target = this.validateEmail(dto.email);
+  async register(dto: RegisterDto) {
+    const email = this.validateEmail(dto.email);
+    const phoneNumber = this.validatePhoneNumber(dto.phone);
+    const firstName = dto.firstName.trim();
+    const lastName = dto.lastName.trim();
 
-    // Find the latest active and unexpired OTP code for the target
-    const otpRecord = await this.prisma.otpCode.findFirst({
-      where: {
-        target,
-        code: dto.otp,
-        verified: false,
-        expiresAt: { gte: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (!otpRecord) {
-      throw new UnauthorizedException('Invalid or expired OTP code');
+    if (!firstName || !lastName) {
+      throw new BadRequestException('First name and last name are required');
     }
 
-    // Mark as verified
-    await this.prisma.otpCode.update({
-      where: { id: otpRecord.id },
-      data: { verified: true },
-    });
-
-    // Check if user exists
-    const user = await this.prisma.user.findFirst({
-      where: { email: target },
-    });
-
-    if (user) {
-      if (user.status === UserStatus.SUSPENDED) {
-        throw new ForbiddenException('Your account has been suspended. Please contact support.');
-      }
-
-      // Generate Access Token and Refresh Token
-      const accessToken = this.generateAccessToken(user);
-      const refreshToken = this.generateRefreshToken(user);
-
-      return {
-        isNewUser: false,
-        accessToken,
-        refreshToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          status: user.status,
-        },
-      };
+    const existingEmail = await this.prisma.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      throw new BadRequestException('An account with this email already exists');
     }
 
-    // For new users: return a short-lived tempToken (valid for 15 minutes)
-    const tempToken = this.jwtService.sign(
-      { target, type: 'registration_temp' },
-      { expiresIn: '15m' }
-    );
-
-    return {
-      isNewUser: true,
-      tempToken,
-    };
-  }
-
-  async completeRegistration(dto: CompleteRegistrationDto, tempTokenUser: { target: string }) {
-    const target = this.validateEmail(tempTokenUser.target);
-    const normalizedPhone = this.validatePhoneNumber(dto.phoneNumber);
-
-    // Check if user already exists
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: target },
-    });
-
-    if (existingUser) {
-      throw new BadRequestException('User is already registered. Please login.');
-    }
-
-    // Check role restriction
-    if (dto.role === Role.ADMIN) {
-      throw new BadRequestException('Admin accounts cannot be self-registered');
-    }
-
-    // Check if phone number is already registered by another user
-    const existingPhone = await this.prisma.user.findFirst({
-      where: { phoneNumber: normalizedPhone },
-    });
-
+    const existingPhone = await this.prisma.user.findUnique({ where: { phoneNumber } });
     if (existingPhone) {
       throw new BadRequestException('Phone number is already in use by another account');
     }
 
-    // Run user and profile creation in a database transaction
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+
     const newUser = await this.prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
-          email: target,
-          phoneNumber: normalizedPhone,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          role: dto.role,
-          status: dto.role === Role.CARER ? UserStatus.PENDING : UserStatus.ACTIVE,
+          email,
+          phoneNumber,
+          passwordHash,
+          firstName,
+          lastName,
+          role: Role.CLIENT,
+          status: UserStatus.ACTIVE,
         },
       });
 
-      if (dto.role === Role.CARER) {
-        await tx.carerProfile.create({
-          data: {
-            userId: createdUser.id,
-          },
-        });
-      } else {
-        await tx.clientProfile.create({
-          data: {
-            userId: createdUser.id,
-          },
-        });
-      }
+      await tx.clientProfile.create({
+        data: { userId: createdUser.id },
+      });
 
       return createdUser;
     });
@@ -193,15 +108,107 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        phoneNumber: newUser.phoneNumber,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        role: newUser.role,
-        status: newUser.status,
+      user: this.formatUserResponse(newUser),
+    };
+  }
+
+  async login(dto: LoginDto) {
+    const email = this.validateEmail(dto.email);
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new ForbiddenException('Your account has been suspended. Please contact support.');
+    }
+
+    const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!passwordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const accessToken = this.generateAccessToken(user);
+    const refreshToken = this.generateRefreshToken(user);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: this.formatUserResponse(user),
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const email = this.validateEmail(dto.email);
+    const genericMessage =
+      'If an account exists with this email, a password reset link has been sent.';
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return { success: true, message: genericMessage };
+    }
+
+    const resetToken = randomBytes(32).toString('hex');
+    const tokenHash = this.hashResetToken(resetToken);
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MS);
+
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt,
       },
+    });
+
+    await this.mailService.sendPasswordResetEmail(email, resetToken, expiresAt);
+
+    return { success: true, message: genericMessage };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const tokenHash = this.hashResetToken(dto.token);
+
+    const resetRecord = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash,
+        usedAt: null,
+        expiresAt: { gte: new Date() },
+      },
+      include: { user: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!resetRecord) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: resetRecord.userId },
+        data: { passwordHash },
+      });
+
+      await tx.passwordResetToken.update({
+        where: { id: resetRecord.id },
+        data: { usedAt: new Date() },
+      });
+
+      await tx.passwordResetToken.updateMany({
+        where: {
+          userId: resetRecord.userId,
+          usedAt: null,
+          id: { not: resetRecord.id },
+        },
+        data: { usedAt: new Date() },
+      });
+    });
+
+    return {
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.',
     };
   }
 
@@ -222,7 +229,6 @@ export class AuthService {
       sub: user.id,
       type: 'refresh',
     };
-    // Refresh token is longer lived, e.g. 7 days
     return this.jwtService.sign(payload, { expiresIn: '7d' });
   }
 }

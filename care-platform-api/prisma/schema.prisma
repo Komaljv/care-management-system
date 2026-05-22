@@ -22,28 +22,32 @@ enum UserStatus {
 
 model User {
   id            String       @id @default(uuid())
-  email         String?      @unique
-  phoneNumber   String?      @unique
+  email         String       @unique
+  phoneNumber   String       @unique
+  passwordHash  String
   firstName     String
   lastName      String
-  role          Role
+  role          Role         @default(CLIENT)
   status        UserStatus   @default(ACTIVE)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  carerProfile  CarerProfile?
-  clientProfile ClientProfile?
+  carerProfile       CarerProfile?
+  clientProfile      ClientProfile?
+  passwordResetTokens PasswordResetToken[]
 }
 
-model OtpCode {
+model PasswordResetToken {
   id        String   @id @default(uuid())
-  target    String   // The email address or phone number
-  code      String   // The 6-digit OTP code
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
   expiresAt DateTime
-  verified  Boolean  @default(false)
+  usedAt    DateTime?
   createdAt DateTime @default(now())
 
-  @@index([target])
+  @@index([userId])
+  @@index([tokenHash])
 }
 
 model CarerProfile {
