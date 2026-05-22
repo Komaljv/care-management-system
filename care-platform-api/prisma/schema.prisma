@@ -1,0 +1,80 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  CARER
+  CLIENT
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  ACTIVE
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String?      @unique
+  phoneNumber   String?      @unique
+  firstName     String
+  lastName      String
+  role          Role
+  status        UserStatus   @default(ACTIVE)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  carerProfile  CarerProfile?
+  clientProfile ClientProfile?
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  target    String   // The email address or phone number
+  code      String   // The 6-digit OTP code
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([target])
+}
+
+model CarerProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  bio             String?
+  videoUrl        String?   // For 1-minute intro video
+  profilePhotoUrl  String?
+  experienceYears  Int?
+  hourlyRate      Decimal?  @db.Decimal(10, 2)
+  postcode        String?   // Location matching
+  city            String?
+  isDbsChecked    Boolean   @default(false)
+  dbsDocumentUrl  String?
+  availability    Json?     // Structured day/time slots
+  careTypes       String[]  // Care specialties (e.g., Dementia, Companionship)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model ClientProfile {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postcode       String?
+  city           String?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}

@@ -4,6 +4,7 @@
     "incremental": false,
     "sourceMap": false,
     "declaration": false,
+    "rootDir": "src",
     "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
