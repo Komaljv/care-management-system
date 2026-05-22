@@ -3,8 +3,8 @@ import './globals.css';
 import SiteHeader from '@/components/SiteHeader';
 
 export const metadata: Metadata = {
-  title: 'Care Platform Web',
-  description: 'A modern care management experience built with Next.js',
+  title: 'Grace & Goodwill',
+  description: 'Grace & Goodwill care platform: elegant, trustworthy care coordination.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-950">
+      <body className="bg-navy-950 text-gold-100">
         <SiteHeader />
         {children}
       </body>
