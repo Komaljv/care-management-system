@@ -1,11 +1,16 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 const modules = [
   {
-    title: 'Mandatory Training',
-    description: 'Core compliance and safeguarding modules every carer must complete to ensure client safety.',
-    bullets: ['Safeguarding adults', 'Health & safety', 'Medication management'],
-    cta: 'View mandatory modules',
+    title: "Mandatory Training",
+    description:
+      "Core compliance and safeguarding modules every carer must complete to ensure client safety.",
+    bullets: [
+      "Safeguarding adults",
+      "Health & safety",
+      "Medication management",
+    ],
+    cta: "View mandatory modules",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -23,10 +28,15 @@ const modules = [
     ),
   },
   {
-    title: 'Face-to-Face Training',
-    description: 'Practical, interactive workshops delivered by experienced training professionals in local settings.',
-    bullets: ['Small group sessions', 'On-site or local venues', 'Practical skills assessments'],
-    cta: 'Book a session',
+    title: "Face-to-Face Training",
+    description:
+      "Practical, interactive workshops delivered by experienced training professionals in local settings.",
+    bullets: [
+      "Small group sessions",
+      "On-site or local venues",
+      "Practical skills assessments",
+    ],
+    cta: "Book a session",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -44,10 +54,15 @@ const modules = [
     ),
   },
   {
-    title: 'E-learning',
-    description: 'Self-paced online training courses featuring interactive guides and integrated progress tracking.',
-    bullets: ['24/7 digital access', 'Fully mobile responsive', 'Interactive quizzes & certificates'],
-    cta: 'Start e-learning',
+    title: "E-learning",
+    description:
+      "Self-paced online training courses featuring interactive guides and integrated progress tracking.",
+    bullets: [
+      "24/7 digital access",
+      "Fully mobile responsive",
+      "Interactive quizzes & certificates",
+    ],
+    cta: "Start e-learning",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -65,10 +80,15 @@ const modules = [
     ),
   },
   {
-    title: 'Expiry Reminders',
-    description: 'Automated administrative tracking to ensure certifications remain active with no compliance gaps.',
-    bullets: ['Configurable warning windows', 'Direct email & SMS notifications', 'Manager dashboard tracking'],
-    cta: 'Configure reminders',
+    title: "Expiry Reminders",
+    description:
+      "Automated administrative tracking to ensure certifications remain active with no compliance gaps.",
+    bullets: [
+      "Configurable warning windows",
+      "Direct email & SMS notifications",
+      "Manager dashboard tracking",
+    ],
+    cta: "Configure reminders",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -86,10 +106,15 @@ const modules = [
     ),
   },
   {
-    title: 'Certificates & Records',
-    description: 'Secure, encrypted storage of learning history, audit-ready reports, and verified credentials.',
-    bullets: ['Instant PDF downloads', 'Audit-ready compliance export', 'Role-based visibility controls'],
-    cta: 'View records',
+    title: "Certificates & Records",
+    description:
+      "Secure, encrypted storage of learning history, audit-ready reports, and verified credentials.",
+    bullets: [
+      "Instant PDF downloads",
+      "Audit-ready compliance export",
+      "Role-based visibility controls",
+    ],
+    cta: "View records",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -107,10 +132,15 @@ const modules = [
     ),
   },
   {
-    title: 'Subscriber Benefits',
-    description: 'Special access, prioritized slots, and custom development paths for subscribed care organizations.',
-    bullets: ['Priority workshop booking', 'Custom career learning pathways', 'Dedicated advisory support'],
-    cta: 'See benefits',
+    title: "Subscriber Benefits",
+    description:
+      "Special access, prioritized slots, and custom development paths for subscribed care organizations.",
+    bullets: [
+      "Priority workshop booking",
+      "Custom career learning pathways",
+      "Dedicated advisory support",
+    ],
+    cta: "See benefits",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -143,14 +173,15 @@ export default function TrainingPage() {
             Academy & Compliance
           </p>
           <h1 className="mt-6 text-4xl font-light tracking-tight text-gold-50 sm:text-5xl md:text-6xl">
-            Premium Training &{' '}
+            Premium Training &{" "}
             <span className="font-semibold text-gold-DEFAULT">
               Support for Carers
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-gold-200/80 sm:text-lg">
-            A flexible learning and compliance system built for professional care organizations. 
-            Empower your team with mandatory courses, interactive e-learning, and certificate verification.
+            A flexible learning and compliance system built for professional
+            care organizations. Empower your team with mandatory courses,
+            interactive e-learning, and certificate verification.
           </p>
         </section>
 
@@ -199,11 +230,14 @@ export default function TrainingPage() {
         {/* Bottom Banner Call to Action */}
         <section className="mt-24 rounded-[32px] border border-gold-300/15 bg-navy-900/30 p-8 text-center backdrop-blur-sm sm:p-12">
           <h2 className="text-2xl font-light text-gold-50 sm:text-3xl">
-            Want to customize <span className="font-semibold text-gold-DEFAULT">training paths?</span>
+            Want to customize{" "}
+            <span className="font-semibold text-gold-DEFAULT">
+              training paths?
+            </span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-gold-200/80 sm:text-base">
-            Configure learning milestones, customized compliance dashboards, and group discount structures. 
-            Contact our learning advisors to begin.
+            Configure learning milestones, customized compliance dashboards, and
+            group discount structures. Contact our learning advisors to begin.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
@@ -224,4 +258,3 @@ export default function TrainingPage() {
     </main>
   );
 }
-

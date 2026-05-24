@@ -28,7 +28,7 @@ export default function RegisterPage() {
       email,
       password,
       confirmPassword,
-      role
+      role,
     );
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -105,7 +105,10 @@ export default function RegisterPage() {
             error={errors.role}
           />
 
-          <Button text={isLoading ? "Creating Account..." : "Create Account"} disabled={isLoading} />
+          <Button
+            text={isLoading ? "Creating Account..." : "Create Account"}
+            disabled={isLoading}
+          />
 
           <p className="text-center text-sm">
             Already have an account?{" "}

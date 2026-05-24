@@ -33,7 +33,7 @@ export const validatePassword = (password: string): string | null => {
 // Password confirmation validation
 export const validatePasswordConfirm = (
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ): string | null => {
   if (!confirmPassword) {
     return "Please confirm your password";
@@ -74,7 +74,7 @@ export interface LoginFormErrors {
 
 export const validateLoginForm = (
   email: string,
-  password: string
+  password: string,
 ): LoginFormErrors => {
   const errors: LoginFormErrors = {};
 
@@ -102,7 +102,7 @@ export const validateRegisterForm = (
   email: string,
   password: string,
   confirmPassword: string,
-  role: string
+  role: string,
 ): RegisterFormErrors => {
   const errors: RegisterFormErrors = {};
 
@@ -130,7 +130,7 @@ export interface ForgotPasswordFormErrors {
 }
 
 export const validateForgotPasswordForm = (
-  email: string
+  email: string,
 ): ForgotPasswordFormErrors => {
   const errors: ForgotPasswordFormErrors = {};
 
@@ -148,7 +148,7 @@ export interface ResetPasswordFormErrors {
 
 export const validateResetPasswordForm = (
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ): ResetPasswordFormErrors => {
   const errors: ResetPasswordFormErrors = {};
 

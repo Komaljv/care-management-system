@@ -7,7 +7,10 @@ import CenteredLayout from "@/components/CenteredLayout";
 import Card from "@/components/Card";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
-import { validateForgotPasswordForm, ForgotPasswordFormErrors } from "@/lib/validation";
+import {
+  validateForgotPasswordForm,
+  ForgotPasswordFormErrors,
+} from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -51,7 +54,8 @@ export default function ForgotPasswordPage() {
         <Card>
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              If an account exists for <strong>{email}</strong>, you will receive an email with instructions to reset your password.
+              If an account exists for <strong>{email}</strong>, you will
+              receive an email with instructions to reset your password.
             </p>
             <p className="text-center text-sm text-muted-foreground">
               If you don&apos;t see the email, please check your spam folder.
@@ -84,7 +88,10 @@ export default function ForgotPasswordPage() {
             error={errors.email}
           />
 
-          <Button text={isLoading ? "Sending..." : "Send Reset Link"} disabled={isLoading} />
+          <Button
+            text={isLoading ? "Sending..." : "Send Reset Link"}
+            disabled={isLoading}
+          />
 
           <p className="text-center text-sm">
             Back to{" "}

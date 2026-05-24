@@ -16,7 +16,9 @@ export default function CenteredLayout({
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground mt-2">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-2">{subtitle}</p>
+          )}
         </div>
 
         {children}

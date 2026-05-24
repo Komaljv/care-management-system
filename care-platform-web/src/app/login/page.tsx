@@ -75,7 +75,10 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Button text={isLoading ? "Logging in..." : "Login"} disabled={isLoading} />
+          <Button
+            text={isLoading ? "Logging in..." : "Login"}
+            disabled={isLoading}
+          />
 
           <p className="text-center text-sm">
             Don&apos;t have an account?{" "}

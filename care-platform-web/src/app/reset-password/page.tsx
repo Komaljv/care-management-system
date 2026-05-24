@@ -7,7 +7,10 @@ import CenteredLayout from "@/components/CenteredLayout";
 import Card from "@/components/Card";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
-import { validateResetPasswordForm, ResetPasswordFormErrors } from "@/lib/validation";
+import {
+  validateResetPasswordForm,
+  ResetPasswordFormErrors,
+} from "@/lib/validation";
 
 export default function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState("");
@@ -91,7 +94,10 @@ export default function ResetPasswordPage() {
             error={errors.confirmPassword}
           />
 
-          <Button text={isLoading ? "Updating..." : "Update Password"} disabled={isLoading} />
+          <Button
+            text={isLoading ? "Updating..." : "Update Password"}
+            disabled={isLoading}
+          />
 
           <p className="text-center text-sm">
             Back to{" "}

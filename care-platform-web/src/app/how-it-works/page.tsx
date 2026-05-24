@@ -1,10 +1,10 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 const steps = [
   {
-    number: '01',
-    title: 'Tell us about you',
-    description: 'Tell us about you and what matters most.',
+    number: "01",
+    title: "Tell us about you",
+    description: "Tell us about you and what matters most.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -27,9 +27,9 @@ const steps = [
     ),
   },
   {
-    number: '02',
-    title: 'Explore options',
-    description: 'Explore carefully selected support options.',
+    number: "02",
+    title: "Explore options",
+    description: "Explore carefully selected support options.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -52,9 +52,9 @@ const steps = [
     ),
   },
   {
-    number: '03',
-    title: 'Choose support',
-    description: 'Choose the support that feels right.',
+    number: "03",
+    title: "Choose support",
+    description: "Choose the support that feels right.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -72,9 +72,9 @@ const steps = [
     ),
   },
   {
-    number: '04',
-    title: 'Receive continuity',
-    description: 'Receive continuity and ongoing support.',
+    number: "04",
+    title: "Receive continuity",
+    description: "Receive continuity and ongoing support.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -108,14 +108,15 @@ export default function HowItWorksPage() {
             Our Process
           </p>
           <h1 className="mt-6 text-4xl font-light tracking-tight text-gold-50 sm:text-5xl md:text-6xl">
-            Simple to begin.{' '}
+            Simple to begin.{" "}
             <span className="font-semibold text-gold-DEFAULT">
               Supportive throughout.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-gold-200/80 sm:text-lg">
-            At Grace & Goodwill, we bring harmony and clarity to live-in care coordination. 
-            We make it simple to get started, ensuring your choices are respected and supported continuously.
+            At Grace & Goodwill, we bring harmony and clarity to live-in care
+            coordination. We make it simple to get started, ensuring your
+            choices are respected and supported continuously.
           </p>
         </section>
 
@@ -131,7 +132,7 @@ export default function HowItWorksPage() {
                 <div
                   key={step.title}
                   className={`group relative flex flex-col md:flex-row md:items-center ${
-                    isEven ? 'md:justify-start' : 'md:justify-end'
+                    isEven ? "md:justify-start" : "md:justify-end"
                   }`}
                 >
                   {/* Timeline Intersection Node */}
@@ -142,7 +143,7 @@ export default function HowItWorksPage() {
                   {/* Step Card */}
                   <div
                     className={`ml-16 w-auto rounded-[24px] border border-gold-300/10 bg-navy-900/40 p-8 shadow-elegant backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-gold-300/30 hover:bg-navy-900/60 hover:shadow-[0_16px_40px_rgba(212,175,55,0.08)] md:ml-0 md:w-[calc(50%-40px)] ${
-                      isEven ? 'md:mr-auto' : 'md:ml-auto'
+                      isEven ? "md:mr-auto" : "md:ml-auto"
                     }`}
                   >
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -183,10 +184,14 @@ export default function HowItWorksPage() {
         {/* Call to Action */}
         <section className="mt-24 rounded-[32px] border border-gold-300/15 bg-navy-900/30 p-8 text-center backdrop-blur-sm sm:p-12">
           <h2 className="text-2xl font-light text-gold-50 sm:text-3xl">
-            Ready to find <span className="font-semibold text-gold-DEFAULT">trusted support?</span>
+            Ready to find{" "}
+            <span className="font-semibold text-gold-DEFAULT">
+              trusted support?
+            </span>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-gold-200/80 sm:text-base">
-            Begin with confidence. We coordinate and support every moment so you can focus on what truly matters.
+            Begin with confidence. We coordinate and support every moment so you
+            can focus on what truly matters.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
@@ -207,4 +212,3 @@ export default function HowItWorksPage() {
     </main>
   );
 }
-

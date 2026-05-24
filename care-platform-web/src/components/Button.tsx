@@ -13,12 +13,16 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = "rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
-  
+  const baseStyles =
+    "rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+
   const variants = {
-    primary: "bg-primary text-primary-foreground hover:opacity-90 disabled:hover:opacity-50",
-    secondary: "bg-secondary text-secondary-foreground hover:opacity-90 disabled:hover:opacity-50",
-    outline: "border border-primary text-primary hover:bg-primary/10 disabled:hover:bg-transparent",
+    primary:
+      "bg-primary text-primary-foreground hover:opacity-90 disabled:hover:opacity-50",
+    secondary:
+      "bg-secondary text-secondary-foreground hover:opacity-90 disabled:hover:opacity-50",
+    outline:
+      "border border-primary text-primary hover:bg-primary/10 disabled:hover:bg-transparent",
   };
 
   const sizes = {

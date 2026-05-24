@@ -5,11 +5,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
-export default function Input({
-  label,
-  error,
-  ...props
-}: InputProps) {
+export default function Input({ label, error, ...props }: InputProps) {
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">{label}</label>
@@ -20,7 +16,7 @@ export default function Input({
           error ? "border-red-500" : "border-gray-300"
         }`}
       />
-      
+
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
