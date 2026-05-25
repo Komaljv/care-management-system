@@ -1,10 +1,12 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import SiteHeader from '@/components/SiteHeader';
+import type { Metadata } from "next";
+import "./globals.css";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: 'Care Platform Web',
-  description: 'A modern care management experience built with Next.js',
+  title: "Grace & Goodwill",
+  description:
+    "Grace & Goodwill care platform: elegant, trustworthy care coordination.",
 };
 
 export default function RootLayout({
@@ -14,9 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-950">
+      <body className="bg-navy-950 text-gold-100 flex flex-col min-h-screen">
         <SiteHeader />
-        {children}
+        <div className="flex-grow">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );
