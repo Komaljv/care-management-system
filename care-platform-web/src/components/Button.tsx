@@ -33,6 +33,7 @@ export default function Button({
 
   return (
     <button
+      type="submit"
       {...props}
       disabled={disabled}
       className={`${baseStyles} ${variants[variant]} ${sizes[size]}`}

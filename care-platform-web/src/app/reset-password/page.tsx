@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import CenteredLayout from "@/components/CenteredLayout";
 import Card from "@/components/Card";
@@ -11,16 +12,28 @@ import {
   validateResetPasswordForm,
   ResetPasswordFormErrors,
 } from "@/lib/validation";
+import { authService } from "@/services/auth/auth.service";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<ResetPasswordFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("RESET PASSWORD SUBMIT");
+    setApiError(null);
+
+    if (!token) {
+      setApiError("Invalid password reset session. Missing token. Please request a new link.");
+      return;
+    }
 
     // Validate form
     const formErrors = validateResetPasswordForm(newPassword, confirmPassword);
@@ -34,13 +47,15 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Add API call to reset password
-      console.log("Reset password attempt:", { newPassword });
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Reset password attempt...");
+      
+      // Perform actual API call to reset password
+      await authService.resetPassword(token, newPassword);
+      
       setSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Reset password error:", error);
+      setApiError(error.message || "Your password reset link is invalid or has expired. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -54,12 +69,12 @@ export default function ResetPasswordPage() {
       >
         <Card>
           <div className="space-y-4 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gold-100/70">
               You can now login with your new password.
             </p>
             <Link
               href="/login"
-              className="block rounded-xl py-3 font-medium transition-all bg-primary text-primary-foreground hover:opacity-90"
+              className="block rounded-xl py-3 font-medium transition-all bg-gold text-navy-950 hover:opacity-90 text-center"
             >
               Go to Login
             </Link>
@@ -76,6 +91,21 @@ export default function ResetPasswordPage() {
     >
       <Card>
         <form className="space-y-5" onSubmit={handleSubmit}>
+          {apiError && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-500">
+              {apiError}
+            </div>
+          )}
+
+          {!token && (
+            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-500 space-y-2">
+              <p>Warning: No password reset token found in your browser URL query parameters.</p>
+              <Link href="/forgot-password" className="block text-xs font-semibold underline hover:opacity-85">
+                Request new password reset link
+              </Link>
+            </div>
+          )}
+
           <Input
             label="New Password"
             type="password"
@@ -96,7 +126,7 @@ export default function ResetPasswordPage() {
 
           <Button
             text={isLoading ? "Updating..." : "Update Password"}
-            disabled={isLoading}
+            disabled={isLoading || !token}
           />
 
           <p className="text-center text-sm">
@@ -111,5 +141,19 @@ export default function ResetPasswordPage() {
         </form>
       </Card>
     </CenteredLayout>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <CenteredLayout title="Loading Session..." subtitle="Please wait while we set up password reset form.">
+        <Card className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+        </Card>
+      </CenteredLayout>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

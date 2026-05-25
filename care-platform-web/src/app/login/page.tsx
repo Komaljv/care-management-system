@@ -2,21 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import CenteredLayout from "@/components/CenteredLayout";
 import Card from "@/components/Card";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { validateLoginForm, LoginFormErrors } from "@/lib/validation";
+import { authService } from "@/services/auth/auth.service";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("LOGIN SUBMIT");
+    setApiError(null);
 
     // Validate form
     const formErrors = validateLoginForm(email, password);
@@ -30,12 +36,20 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Add API call to login
-      console.log("Login attempt:", { email, password });
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error("Login error:", error);
+      console.log("Login attempt:", { email });
+      
+      const response = await authService.login({
+        email,
+        password,
+      });
+
+      console.log("LOGIN SUCCESS", response);
+
+      router.push("/");
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      setApiError(error.message || "Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +62,12 @@ export default function LoginPage() {
     >
       <Card>
         <form className="space-y-5" onSubmit={handleSubmit}>
+          {apiError && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-500">
+              {apiError}
+            </div>
+          )}
+
           <Input
             label="Email"
             type="email"

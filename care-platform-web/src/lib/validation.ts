@@ -66,6 +66,46 @@ export const validateRole = (role: string): string | null => {
   return null;
 };
 
+// First name validation
+export const validateFirstName = (name: string): string | null => {
+  if (!name.trim()) {
+    return "First name is required";
+  }
+  if (name.trim().length < 2) {
+    return "First name must be at least 2 characters";
+  }
+  if (!/^[a-zA-Z\s'-]+$/.test(name)) {
+    return "First name can only contain letters, spaces, hyphens, and apostrophes";
+  }
+  return null;
+};
+
+// Last name validation
+export const validateLastName = (name: string): string | null => {
+  if (!name.trim()) {
+    return "Last name is required";
+  }
+  if (name.trim().length < 2) {
+    return "Last name must be at least 2 characters";
+  }
+  if (!/^[a-zA-Z\s'-]+$/.test(name)) {
+    return "Last name can only contain letters, spaces, hyphens, and apostrophes";
+  }
+  return null;
+};
+
+// Phone number validation
+export const validatePhone = (phone: string): string | null => {
+  if (!phone.trim()) {
+    return "Phone number is required";
+  }
+  const phoneRegex = /^\+?[0-9\s\-()]{7,15}$/;
+  if (!phoneRegex.test(phone.trim())) {
+    return "Please enter a valid phone number";
+  }
+  return null;
+};
+
 // Login form validation
 export interface LoginFormErrors {
   email?: string;
@@ -90,36 +130,36 @@ export const validateLoginForm = (
 
 // Register form validation
 export interface RegisterFormErrors {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
+  phone?: string;
   password?: string;
-  confirmPassword?: string;
-  role?: string;
 }
 
 export const validateRegisterForm = (
-  fullName: string,
+  firstName: string,
+  lastName: string,
   email: string,
+  phone: string,
   password: string,
-  confirmPassword: string,
-  role: string,
 ): RegisterFormErrors => {
   const errors: RegisterFormErrors = {};
 
-  const nameError = validateFullName(fullName);
-  if (nameError) errors.fullName = nameError;
+  const firstNameError = validateFirstName(firstName);
+  if (firstNameError) errors.firstName = firstNameError;
+
+  const lastNameError = validateLastName(lastName);
+  if (lastNameError) errors.lastName = lastNameError;
 
   const emailError = validateEmail(email);
   if (emailError) errors.email = emailError;
 
+  const phoneError = validatePhone(phone);
+  if (phoneError) errors.phone = phoneError;
+
   const passwordError = validatePassword(password);
   if (passwordError) errors.password = passwordError;
-
-  const confirmError = validatePasswordConfirm(password, confirmPassword);
-  if (confirmError) errors.confirmPassword = confirmError;
-
-  const roleError = validateRole(role);
-  if (roleError) errors.role = roleError;
 
   return errors;
 };

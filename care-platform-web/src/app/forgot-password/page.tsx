@@ -11,15 +11,19 @@ import {
   validateForgotPasswordForm,
   ForgotPasswordFormErrors,
 } from "@/lib/validation";
+import { authService } from "@/services/auth/auth.service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<ForgotPasswordFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("FORGOT PASSWORD SUBMIT");
+    setApiError(null);
 
     // Validate form
     const formErrors = validateForgotPasswordForm(email);
@@ -33,13 +37,15 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Add API call to send reset link
       console.log("Forgot password attempt:", { email });
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Perform actual API call to forgot-password
+      await authService.forgotPassword(email);
+      
       setSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Forgot password error:", error);
+      setApiError(error.message || "Something went wrong. Please check your network and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -52,17 +58,17 @@ export default function ForgotPasswordPage() {
         subtitle="We've sent a password reset link to your email address."
       >
         <Card>
-          <div className="space-y-4">
-            <p className="text-center text-sm text-muted-foreground">
+          <div className="space-y-4 text-center">
+            <p className="text-sm text-gold-100/70">
               If an account exists for <strong>{email}</strong>, you will
               receive an email with instructions to reset your password.
             </p>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-sm text-gold-100/70">
               If you don&apos;t see the email, please check your spam folder.
             </p>
             <Link
               href="/login"
-              className="block text-center rounded-xl py-3 font-medium transition-all bg-primary text-primary-foreground hover:opacity-90"
+              className="block rounded-xl py-3 font-medium transition-all bg-gold text-navy-950 hover:opacity-90 text-center"
             >
               Back to Login
             </Link>
@@ -79,6 +85,12 @@ export default function ForgotPasswordPage() {
     >
       <Card>
         <form className="space-y-5" onSubmit={handleSubmit}>
+          {apiError && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-500">
+              {apiError}
+            </div>
+          )}
+
           <Input
             label="Email"
             type="email"
